@@ -2,34 +2,44 @@
 
 A full-stack Inventory Management System built with **ASP.NET Core Web API**, **Entity Framework Core**, **Microsoft SQL Server**, **React**, and **TypeScript**.
 
-The application manages product cataloging, category organization, inventory stock adjustments, historical transaction tracking, and role-based access control. It provides an administrative interface for inventory operators alongside a restricted view for standard users.
+The application streamlines warehouse and retail stock operations, product catalog management, category organization, inventory adjustments with deficit prevention, and immutable transaction audit logging. It enforces Role-Based Access Control (RBAC) with distinct workflows for administrators and standard users.
 
 ---
 
-## API Documentation
+## Overview
 
-Comprehensive endpoint specifications, request/response schemas, authentication requirements, and role permissions are available in the dedicated documentation file:
+The Inventory Management System provides a centralized solution for tracking products, monitoring stock levels in real time, and maintaining an auditable transaction ledger.
 
-- **[View API Documentation](docs/api.md)**
+- **Problem Solved**: Eliminates manual stock tracking errors, prevents negative inventory states, ensures category referential integrity, and maintains an unalterable audit trail of all inventory movements linked to authenticated users.
+- **Implementation**: Built as a decoupled architecture featuring a RESTful ASP.NET Core Web API backend connected to Microsoft SQL Server via Entity Framework Core, paired with a modern React + TypeScript single-page application.
+- **Core Capabilities**: Role-based access control, paginated product catalog with dynamic search and sorting, category management with unique constraints, five stock transaction operations, and dashboard analytics.
+
+---
+
+## Documentation & Demo
+
+- [API Documentation](https://sumedhgaikwad03.github.io/Inventory-Management-System/api)
+- [ER Diagram](docs/database-schema.svg)
+- [▶ Demo Video](https://youtu.be/yo4oo52Hr6Q)
 
 ---
 
 ## Features
 
-- **Authentication**: Secure JWT-based authentication with salted PBKDF2 password hashing and automatic session restoration on reload.
+- **Authentication & Session Management**: Secure JWT-based authentication with PBKDF2 password hashing (salt + hash verification) and automatic session recovery on page refresh.
 - **Role-Based Access Control (RBAC)**:
-  - **Admin**: Full read and write access across all entities, product and category CRUD, stock adjustments, and transaction history.
-  - **User**: Read-only access to browse the Dashboard, Product catalog, and Category list.
-- **Product Management**: Create, read, update, and delete products with server-side pagination, search-as-you-type, multi-column sorting, category filtering, and low-stock filter toggling.
-- **Category Management**: Create, edit, and delete product categories with referential integrity checks preventing the deletion of categories that have assigned products.
-- **Inventory Stock Adjustments**: Record stock level changes supporting `Restock`, `Sale`, `Damage`, and `Return` operations with stock deficit prevention (blocks negative inventory).
-- **Transaction History**: Historical ledger logging stock changes, operation types, timestamps, associated products, and the user who initiated the action.
-- **Dashboard**: High-level inventory overview showing total products, total stock units, low-stock item counts, and recent transaction records.
-- **Validation & Error Handling**: Client-side form validation, DTO DataAnnotations, service-level rule enforcement, and standardized RFC 7807 `ProblemDetails` error responses with user-friendly alerts.
+  - **Admin**: Full read and write permissions across product and category catalogs, stock adjustment creation, and transaction history inspection.
+  - **User**: Read-only access to browse products, view categories, and monitor dashboard summary cards.
+- **Product Catalog Management**: Create, read, update, and delete products with server-side pagination, instant substring search, multi-column sorting (`name`, `price`, `quantity`), category filtering, and low-stock filter toggling ($\le 5$ units).
+- **Category Organization**: Group products by category with uniqueness enforcement and referential delete protection against removing categories with active products.
+- **Inventory Stock Adjustments**: Execute stock modifications across five supported transaction types (`Restock`, `Return`, `Sale`, `Damage`, `Adjustment`) with negative stock deficit prevention.
+- **Immutable Transaction Audit Ledger**: Detailed audit history recording product ID, quantity delta, transaction type, timestamp (UTC), and the authenticated user ID extracted from JWT claims.
+- **Dashboard Overview**: Client-side aggregated inventory metrics displaying total products, total stock units, low-stock alerts, and recent transaction history.
+- **Standardized Error Handling**: RFC 7807 `ProblemDetails` compliant error responses across all endpoints with field-level validation and business rule violation messages.
 
 ---
 
-## Tech Stack
+## Technology Stack
 
 ### Backend
 - **Framework**: ASP.NET Core Web API (.NET 10.0)
@@ -44,50 +54,85 @@ Comprehensive endpoint specifications, request/response schemas, authentication 
 - **Build Tool / Bundler**: Vite 6.0.3
 - **Routing**: React Router DOM 7.18.3
 - **HTTP Client**: Axios 1.7.9
-- **Styling**: Custom CSS with responsive layouts (no external UI component libraries)
+- **Styling**: Custom CSS with responsive layouts (zero external UI component libraries)
 
 ---
 
-## Project Structure
+## Architecture / Project Structure
+
+The project is structured with a clear separation of concerns between HTTP transport, business logic, data access, and the frontend client:
 
 ```text
 InventoryApi/
-├── Controllers/         # API controllers handling HTTP requests and routing
-├── DTOs/                # Data Transfer Objects for request validation and response mapping
-├── Data/                # EF Core DbContext and database seed definitions
-├── Exceptions/          # Global exception handler producing RFC 7807 ProblemDetails
-├── Migrations/          # EF Core database schema migrations
-├── Models/              # Domain database entities (User, Category, Product, InventoryTransaction)
+├── Controllers/         # API controllers handling HTTP routing, model binding, and status codes
+├── DTOs/                # Data Transfer Objects enforcing input validation and response contracts
+├── Data/                # EF Core DbContext, Fluent API configurations, and database seeder
+├── Exceptions/          # Global exception middleware producing RFC 7807 ProblemDetails
+├── Migrations/          # EF Core database schema migrations and model snapshot
+├── Models/              # Domain entities (User, Category, Product, InventoryTransaction)
 ├── Services/            # Business logic layer (Auth, Categories, Products, Transactions)
-├── Program.cs           # Dependency injection, middleware pipeline, and app configuration
-├── appsettings.json     # Connection strings and JWT settings
+├── Program.cs           # Dependency injection container, middleware pipeline, and CORS setup
+├── appsettings.json     # Connection strings and JWT token parameters
+├── docs/                # GitHub Pages documentation source (landing page, API docs, ER diagram)
 └── frontend/            # React + TypeScript single-page application
     ├── src/
-    │   ├── api/         # Axios transport client, endpoint definitions, and error parser
-    │   ├── components/  # Shared UI, layout (Navbar, Sidebar), and feedback components
-    │   ├── context/     # AuthContext managing user sessions and 401 state invalidation
+    │   ├── api/         # Axios transport client, API endpoints, and error parsing
+    │   ├── components/  # Shared layout (Navbar, Sidebar), modal dialogs, and UI feedback
+    │   ├── context/     # AuthContext managing token lifecycle and 401 session expiry
     │   ├── features/    # Feature modules (auth, categories, dashboard, products, transactions)
     │   ├── pages/       # Route fallback pages (NotFoundPage, UnauthorizedPage)
-    │   ├── routes/      # Route declarations with PublicRoute, ProtectedRoute, and RoleRoute guards
-    │   ├── types/       # TypeScript interfaces matching backend DTO contracts
-    │   └── utils/       # Local storage wrapper and JWT token decoder
+    │   ├── routes/      # Route guards (PublicRoute, ProtectedRoute, RoleRoute)
+    │   ├── types/       # TypeScript interfaces aligned with backend DTOs
+    │   └── utils/       # LocalStorage wrapper and JWT claim parser
     ├── package.json     # Frontend dependencies and npm scripts
-    └── vite.config.ts   # Vite server configuration (port 5173)
+    └── vite.config.ts   # Vite development server configuration (port 5173)
 ```
 
 ---
 
-## Setup & Running
+## Database Overview
 
-The application is designed to run locally. Follow the steps below to configure, migrate, and start both the backend and frontend.
+The relational database is configured in `Data/InventoryDbContext.cs` and managed via EF Core migrations across four normalized tables:
+
+### Tables & Entities
+
+- **Users**: Manages user credentials, PBKDF2 password hashes, email addresses, and assigned system roles (`Admin` or `User`).
+- **Categories**: Defines product groupings with unique names limited to 100 characters (`nvarchar(100)`) and optional descriptions up to 1000 characters (`nvarchar(1000)`).
+- **Products**: Stores catalog items with names limited to 100 characters (`nvarchar(100)`), unit pricing with `decimal(18,2)` precision, stock quantities, and assigned category foreign keys.
+- **InventoryTransactions**: Logs stock adjustments with bounded operation types (`nvarchar(20)`), quantity deltas, UTC creation timestamps, and foreign keys referencing the affected product and acting user.
+
+### Relationships & Delete Behaviors
+
+- **Category → Product (1 : N)**: `DeleteBehavior.Restrict`
+  *A category cannot be deleted while active products remain assigned to it.*
+- **Product → InventoryTransaction (1 : N)**: `DeleteBehavior.Cascade`
+  *Deleting a product cascades to remove its associated transaction history.*
+- **User → InventoryTransaction (1 : N)**: `DeleteBehavior.Restrict`
+  *Deleting a user account preserves existing historical audit records.*
+
+---
+
+## Validation & Data Integrity
+
+- **Name Length Limits**: `Category.Name` and `Product.Name` are restricted to a maximum of 100 characters in request DTOs (`[StringLength(100)]`) and database columns (`nvarchar(100)`).
+- **Category Description Limit**: `Category.Description` is limited to a maximum of 1000 characters (`nvarchar(1000)`).
+- **Category Name Uniqueness**: Category names must be unique across the catalog, enforced by service validation and a unique database index (`IX_Categories_Name`).
+- **Transaction Type Validation**: `TransactionType` is limited to a maximum of 20 characters (`nvarchar(20)`) and restricted to valid operations: `Restock`, `Return`, `Sale`, `Damage`, and `Adjustment`.
+- **Price Precision**: Product prices require non-negative decimal values configured with `decimal(18,2)` precision.
+- **Deficit Prevention**: Stock reductions that would result in negative inventory are rejected with `400 Bad Request`.
+- **Audit Authenticity**: The acting user ID for stock transactions is extracted directly from verified JWT claims to prevent audit identity tampering.
+
+---
+
+## Setup & Installation
 
 ### Prerequisites
 
-Ensure the following tools are installed on your machine:
+Ensure the following dependencies are installed on your machine:
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download)
 - [Node.js (v18+ or v20+)](https://nodejs.org/) and `npm`
 - [Microsoft SQL Server](https://www.microsoft.com/sql-server) (Local SQL Server instance or SQL Server Express)
-- .NET EF Core CLI Tool (install globally if not already available):
+- .NET EF Core CLI Tool (install globally if needed):
   ```bash
   dotnet tool install --global dotnet-ef
   ```
@@ -105,7 +150,7 @@ cd Inventory-Management-System
 
 ### Step 2: Configure SQL Server
 
-Open `appsettings.json` in the project root and verify the connection string:
+Open `appsettings.json` in the project root and verify the database connection string:
 
 ```json
 {
@@ -115,14 +160,13 @@ Open `appsettings.json` in the project root and verify the connection string:
 }
 ```
 
-- If using a default local SQL Server instance, the default connection string works as configured.
-- If using SQL Server Express, update the `Server` property to `Server=localhost\\SQLEXPRESS;` or your specific instance name.
+*Note: If using SQL Server Express, adjust the `Server` property to `Server=localhost\\SQLEXPRESS;` or your designated instance name.*
 
 ---
 
-### Step 3: Apply EF Core Migrations
+### Step 3: Apply Database Migrations
 
-Before launching the application, create the database schema by applying the existing EF Core migrations:
+Apply the existing EF Core migrations to create and update the SQL Server database schema:
 
 ```bash
 dotnet ef database update
@@ -130,23 +174,26 @@ dotnet ef database update
 
 ---
 
-### Step 4: Run the Backend API
+## Running the Application
 
-Start the ASP.NET Core Web API:
+### 1. Start the Backend API
+
+From the root project directory:
 
 ```bash
 dotnet run
 ```
 
-- The backend will build and start listening on `http://localhost:5062`.
-- On startup, the database seeder (`DbSeeder.cs`) checks for and creates default test accounts if they do not already exist.
-- Keep this terminal window open.
+- Backend API listens on: `http://localhost:5062`
+- API Root Base: `http://localhost:5062/api`
+- OpenAPI Specification: `http://localhost:5062/openapi/v1.json`
+- Default test accounts are automatically seeded on initial startup if not already present.
 
 ---
 
-### Step 5: Run the Frontend
+### 2. Start the Frontend Application
 
-Open a **second terminal window**, navigate to the `frontend` folder, install npm dependencies, and start the Vite development server:
+Open a second terminal window, navigate to the `frontend` folder, install dependencies, and launch the Vite development server:
 
 ```bash
 cd frontend
@@ -154,70 +201,25 @@ npm install
 npm run dev
 ```
 
-- The frontend will compile and start listening on `http://localhost:5173`.
-- Open `http://localhost:5173` in your browser to use the application.
-
-> **Note**: The backend must remain running in the first terminal for the frontend to authenticate and load inventory data.
-
----
-
-## Application URLs
-
-| Service | URL | Description |
-| :--- | :--- | :--- |
-| **Frontend Application** | `http://localhost:5173` | React single-page application |
-| **Backend API Base** | `http://localhost:5062/api` | ASP.NET Core REST API root |
-| **OpenAPI Specification** | `http://localhost:5062/openapi/v1.json` | OpenAPI v1 JSON endpoint |
-
-*(Note: Swagger UI is not configured; endpoint contracts are served via the OpenAPI JSON endpoint).*
+- Frontend application listens on: `http://localhost:5173`
+- Open `http://localhost:5173` in your browser to access the application.
 
 ---
 
 ## Test Accounts
 
-The database seeder (`Data/DbSeeder.cs`) automatically seeds two test accounts upon startup:
+The database seeder (`Data/DbSeeder.cs`) provisions the following default test accounts:
 
-| Role | Username | Password | Access & Permissions |
+| Role | Username | Password | Permissions |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin` | `AdminPassword123!` | Full permissions: create/edit/delete products and categories, execute stock adjustments, view all transaction logs. |
-| **Standard User** | `user` | `UserPassword123!` | Read-only permissions: browse products, view categories, and view dashboard summary cards. Blocked from write operations. |
+| **Admin** | `admin` | `AdminPassword123!` | Full permissions: create, edit, delete products/categories, execute stock adjustments, view all transaction logs. |
+| **Standard User** | `user` | `UserPassword123!` | Read-only permissions: browse products, view categories, and view dashboard summary cards. |
 
-Standard users can also register new accounts directly through the **Sign Up** page at `http://localhost:5173/signup`.
-
----
-
-## Database
-
-The database is normalized across four primary entities configured in `Data/InventoryDbContext.cs`:
-
-- **Users**: Stores credentials (salted PBKDF2 hash), email, and system roles (`Admin` vs `User`).
-- **Categories**: Defines product categories with unique name constraints, a maximum name length of 100 characters (`nvarchar(100)`), and optional description up to 1000 characters (`nvarchar(1000)`).
-- **Products**: Contains item stock records, maximum name length of 100 characters (`nvarchar(100)`), pricing (`decimal(18,2)`), and category foreign keys.
-- **InventoryTransactions**: Logs inventory stock changes with bounded transaction type (`nvarchar(20)`: `Restock`, `Sale`, `Damage`, `Return`, `Adjustment`), quantity delta, timestamp, and user reference.
-
-### Foreign Key & Delete Behaviors
-- **Category → Product**: `DeleteBehavior.Restrict` (A category cannot be deleted while products are assigned to it).
-- **Product → InventoryTransaction**: `DeleteBehavior.Cascade` (Deleting a product removes its associated historical transaction records).
-- **User → InventoryTransaction**: `DeleteBehavior.Restrict` (Deleting a user account preserves existing transaction history records).
-
-The complete Entity-Relationship Diagram and detailed schema documentation are provided in the external technical documentation.
-
----
-
-## Additional Documentation
-
-Detailed technical documentation, API specifications, and visual demonstrations are maintained in the following resources:
-
-- **Technical Documentation & API Reference**: [GOOGLE_DOC_LINK](GOOGLE_DOC_LINK)  
-  *Contains full API endpoint tables, request/response JSON payloads, architecture explanations, and error code mappings.*
-- **Database Design & ER Diagram**: [GOOGLE_DOC_LINK](GOOGLE_DOC_LINK)  
-  *Contains the detailed visual ER diagram and database schema reference.*
-- **Application Demonstration Video**: [YOUTUBE_DEMO_LINK](YOUTUBE_DEMO_LINK)  
-  *An unlisted video walkthrough showcasing authentication, RBAC restrictions, category/product management, and stock adjustments.*
+*Standard users can also register a new account via the **Sign Up** page at `http://localhost:5173/signup`.*
 
 ---
 
 ## Notes
 
-- This repository is configured for local development and does not require cloud deployment.
 - CORS is pre-configured in `Program.cs` to allow requests originating from `http://localhost:5173`.
+- JWT authentication uses a 60-minute token expiration with zero clock skew.
