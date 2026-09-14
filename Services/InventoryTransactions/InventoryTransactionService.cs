@@ -7,13 +7,15 @@ namespace InventoryApi.Services.InventoryTransactions;
 
 public class InventoryTransactionService : IInventoryTransactionService
 {
-    private readonly InventoryDbContext _context; // geeting the  variable ready 
+    // getting the variable ready
+    private readonly InventoryDbContext _context;
 
+    // dependency injection happens over here
     public InventoryTransactionService(
         InventoryDbContext context)
     {
         _context = context;
-    } // dependency injection happens over here 
+    }
 
 
 
@@ -37,11 +39,6 @@ public class InventoryTransactionService : IInventoryTransactionService
         .FirstOrDefaultAsync();
 }
 
-
-    // ============================================================
-    // CREATE TRANSACTION
-    // ============================================================
-
     public async Task<InventoryTransactionResponseDto> CreateAsync(
         int productId,
         int userId,
@@ -58,7 +55,7 @@ public class InventoryTransactionService : IInventoryTransactionService
      if (user is null)
 {
     throw new ArgumentException("User not found.");
-}    
+}
 
         if (product is null)
         {
@@ -105,11 +102,6 @@ public class InventoryTransactionService : IInventoryTransactionService
 };
     }
 
-
-    // ============================================================
-    // GET ALL TRANSACTIONS
-    // ============================================================
-
     public async Task<List<InventoryTransactionResponseDto>> GetAllAsync()
     {
         return await _context.InventoryTransactions
@@ -129,11 +121,6 @@ public class InventoryTransactionService : IInventoryTransactionService
             .OrderByDescending(t => t.CreatedDate)
             .ToListAsync();
     }
-
-
-    // ============================================================
-    // GET TRANSACTIONS FOR ONE PRODUCT
-    // ============================================================
 
     public async Task<List<InventoryTransactionResponseDto>>
         GetByProductIdAsync(int productId)

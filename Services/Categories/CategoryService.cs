@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using InventoryApi.Data;
 using InventoryApi.DTOs.Categories;
 using InventoryApi.Models;
@@ -32,10 +31,11 @@ public class CategoryService : ICategoryService
     // GET: /api/categories/{id}
     public async Task<CategoryResponseDto?> GetByIdAsync(int id)
     {
+        // this is because it expects the response to be in the form of
+        // <CategoryResponse>
         return await _context.Categories
             .Where(c => c.Id == id)
-            .Select(c => new CategoryResponseDto // this is beacuse it expects thr response to be in the form of 
-            // <CatrgoryResponse> 
+            .Select(c => new CategoryResponseDto
             {
                 Id = c.Id,
                 Name = c.Name,
@@ -50,9 +50,9 @@ public class CategoryService : ICategoryService
         CreateCategoryDto dto)
     {
         // Prevent duplicate category names.
+        // checks if category already exists
         var exists = await _context.Categories
             .AnyAsync(c => c.Name == dto.Name);
-            // tchecks if catgory already exists 
 
         if (exists)
         {
@@ -60,16 +60,19 @@ public class CategoryService : ICategoryService
                 "A category with this name already exists.");
         }
 
+        // a category is created
         var category = new Category
         {
             Name = dto.Name,
             Description = dto.Description,
             CreatedDate = DateTime.UtcNow
-        }; // a catagory is created 
+        };
 
-        _context.Categories.Add(category); // that is added to temp cache in c# , ef core change traker 
+        // that is added to temp cache in c# , ef core change tracker
+        _context.Categories.Add(category);
 
-        await _context.SaveChangesAsync(); // then we save the response to SQL
+        // then we save the response to SQL
+        await _context.SaveChangesAsync();
 
         return new CategoryResponseDto
         {
@@ -105,10 +108,9 @@ public class CategoryService : ICategoryService
                 "A category with this name already exists.");
         }
 
+        // populating values to category that we defined above as var
         category.Name = dto.Name;
         category.Description = dto.Description;
-
-        // populating values to catgeory that we defined above as var 
 
         await _context.SaveChangesAsync();
 
@@ -142,9 +144,11 @@ public class CategoryService : ICategoryService
                 "Cannot delete a category that has products.");
         }
 
-        _context.Categories.Remove(category); // makes the tracking entity deleted 
+        // makes the tracking entity deleted
+        _context.Categories.Remove(category);
 
-        await _context.SaveChangesAsync(); // then that context is saved 
+        // then that context is saved
+        await _context.SaveChangesAsync();
 
         return true;
     }

@@ -5,35 +5,34 @@ using Microsoft.AspNetCore.Mvc;
 namespace InventoryApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")] // this is the structure of the query for the string request 
-// the [controller] becomes auth as the keyword defined below 
+[Route("api/[controller]")] // this is the structure of the query for the string request
+// the [controller] becomes auth as the keyword defined below
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService; // we created an varibale that 
-    // implements the interface and holds it in the variable for this 
-    //class 
+    private readonly IAuthService _authService; // we created a variable that
+    // implements the interface and holds it in the variable for this
+    //class
 
+    // this is a constructor of auth controller
+    // this basically means that to create the authcontroller we need
+    // something that implements IAuthService , here is where we implement or take
+    // help of program.cs to inject the dependency
+    // in this part the controller depends on the interface
     public AuthController(IAuthService authService)
     {
         _authService = authService;
     }
-    // this is an constructor of auth controller 
-    // this basiclly means that the to create the authcontroller we need
-    // smt that implements Iauthservice , here is where we implement or take 
-    // help of progam.cs to inject the dependency 
-
-    // in this part the controller depends on the interface 
 
     // POST: /api/auth/signup
     [HttpPost("signup")]
 
-    // the line below simply says like "This is an asynchronous API operation that 
+    // the line below simply says like "This is an asynchronous API operation that
     // will return an HTTP result containing an AuthResponseDto"
     public async Task<ActionResult<AuthResponseDto>> Signup(
         SignupRequestDto dto)
     {
-        var user = await _authService.SignupAsync(dto);// we call the 
-        // signup service through dependecy injection 
+        var user = await _authService.SignupAsync(dto);// we call the
+        // signup service through dependency injection
 
         return Ok(user);
     }

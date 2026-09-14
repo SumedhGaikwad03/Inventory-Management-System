@@ -7,7 +7,7 @@ import type { // these are typescript types for uniform data handoff
   UpdateCategoryDto,
 } from '../../../types/index.ts';
 
-// This is majorly an ui/form that uses catagory api to send data to backend 
+// This is majorly a ui/form that uses category api to send data to backend
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -16,11 +16,11 @@ interface CategoryModalProps {
   onSubmit: (data: CreateCategoryDto | UpdateCategoryDto) => Promise<void>;
   isSubmitting: boolean;
   error: string | null;
-} 
-// the above part is everything thing the parent component should provide
+}
+// the above part is everything the parent component should provide
 
 export const CategoryModal: React.FC<CategoryModalProps> = ({
-  // we are destructuring the props here that the parent provided 
+  // we are destructuring the props here that the parent provided
   isOpen,
   onClose,
   initialData,
@@ -34,6 +34,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   const [clientValidation, setClientValidation] = useState<string | null>(null);
 
   // Sync state when modal opens or initialData changes
+  // this helps synchronize form with current model/data
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
@@ -46,37 +47,38 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       setClientValidation(null);
     }
   }, [isOpen, initialData]);
-  // this helps syncronize form with models current model/data 
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // doesnt let browser reload 
-    setClientValidation(null); //  remove the old erroes for vaildation 
+    // doesn't let browser reload
+    e.preventDefault();
+    // remove the old errors for validation
+    setClientValidation(null);
 
     const trimmedName = name.trim();
     if (!trimmedName) {
       setClientValidation('Category name is required.');
       return;
-    } 
+    }
 
     if (trimmedName.length > 100) {
       setClientValidation('Category name cannot exceed 100 characters.');
       return;
     }
 
-    if (description.length > 500) {
-      setClientValidation('Description cannot exceed 500 characters.');
+    if (description.length > 1000) {
+      setClientValidation('Description cannot exceed 1000 characters.');
       return;
     }
 
-    // above filelds check names , whether data is vaid or not 
-
+    // above fields check names , whether data is valid or not
+    // here we actually build the payload
     const payload: CreateCategoryDto = {
       name: trimmedName,
       description: description.trim() ? description.trim() : null,
-    }; 
-    // here we actually build the payload 
+    };
 
-    await onSubmit(payload); // this submits the payload to parent 
+    // this submits the payload to parent
+    await onSubmit(payload);
   };
 
   const displayError = clientValidation || error;
@@ -151,7 +153,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={isSubmitting}
-            maxLength={500}
+            maxLength={1000}
             rows={3}
             placeholder="Brief description of the items included in this category..."
             style={{
@@ -165,7 +167,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             }}
           />
           <span style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'right' }}>
-            {description.length}/500
+            {description.length}/1000
           </span>
         </div>
 

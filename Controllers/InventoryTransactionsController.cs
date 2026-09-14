@@ -20,10 +20,6 @@ public class InventoryTransactionsController : ControllerBase
     }
 
 
-    // ============================================================
-    // GET ALL TRANSACTIONS
-    // ============================================================
-
     [HttpGet]
     public async Task<ActionResult<List<InventoryTransactionResponseDto>>>
         GetAll()
@@ -32,11 +28,6 @@ public class InventoryTransactionsController : ControllerBase
 
         return Ok(transactions);
     }
-
-
-    // ============================================================
-    // GET TRANSACTIONS FOR ONE PRODUCT
-    // ============================================================
 
     [HttpGet("product/{productId:int}")]
     public async Task<ActionResult<List<InventoryTransactionResponseDto>>>
@@ -47,11 +38,6 @@ public class InventoryTransactionsController : ControllerBase
 
         return Ok(transactions);
     }
-
-
-    // ============================================================
-    // CREATE INVENTORY TRANSACTION
-    // ============================================================
 
     [HttpPost]
     public async Task<ActionResult<InventoryTransactionResponseDto>> Create(

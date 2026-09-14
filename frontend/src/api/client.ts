@@ -1,5 +1,5 @@
-import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'; 
-// this config allows typescript to undrstand errors,urls etc 
+import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
+// this config allows typescript to understand errors,urls etc
 import { storage } from '../utils/storage.ts';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5062/api';
@@ -7,23 +7,28 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5062/api'
 /**
  * Configured Axios instance with JWT interceptor and standard headers
  */
-export const apiClient: AxiosInstance = axios.create({ // this tells that apiclient is an instance of the axios 
+// this tells that apiclient is an instance of the axios
+// here we have configured axios instance
+export const apiClient: AxiosInstance = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 15000,
-}); // here we have configure axios instant 
+});
 
 // Request interceptor: Attach JWT token if available
-// this runs before requests leaves our frontend 
+// this runs before requests leave our frontend
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = storage.getToken(); // cheks local stroage for jwt 
+    // checks local storage for jwt
+    const token = storage.getToken();
     if (token && config.headers) {
+      // attach jwt for each request
       config.headers.Authorization = `Bearer ${token}`;
-    } // attach jwt for each request 
-    return config; // congif is returned to axios 
+    }
+    // config is returned to axios
+    return config;
   },
   (error) => Promise.reject(error)
 );
@@ -37,7 +42,8 @@ apiClient.interceptors.response.use(
       storage.clearToken();
       window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     }
-    return Promise.reject(error); // The interceptor preserves the rejected Axios error and passes it back to whatever code called the API.
+    // The interceptor preserves the rejected Axios error and passes it back to whatever code called the API.
     //  Usually, that is a feature API caller in a Page or Component, where a local try/catch handles it.
+    return Promise.reject(error);
   }
 );

@@ -5,18 +5,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryApi.Services.Auth;
 
-public class AuthService : IAuthService // AuthService implements the IAuthService interface.
+// AuthService implements the IAuthService interface.
 // This means AuthService must provide the methods defined by IAuthService.
-
+public class AuthService : IAuthService
 {
     private readonly InventoryDbContext _context; // we are defining the variable type to use later 
     private readonly IPasswordHasher _passwordHasher;
-    
     private readonly IJwtService _jwtService; 
-    
 
     // we declared three dependencies that this service needs 
-
+    // Constructor receives the dependencies through Dependency Injection
+    // and stores them in private fields so AuthService can use them.
+    // Depending on interfaces helps keep AuthService loosely coupled
+    // to specific implementations.
     public AuthService(
         InventoryDbContext context,
         IPasswordHasher passwordHasher,
@@ -27,14 +28,9 @@ public class AuthService : IAuthService // AuthService implements the IAuthServi
         _jwtService = jwtService;
     } 
 
-   // Constructor receives the dependencies through Dependency Injection
-// and stores them in private fields so AuthService can use them.
-// Depending on interfaces helps keep AuthService loosely coupled
-// to specific implementations.
-    
-
-    public async Task<AuthResponseDto> SignupAsync( // async method that performs an asynchronous operation
-// and eventually returns an AuthResponseDto.
+    // async method that performs an asynchronous operation
+    // and eventually returns an AuthResponseDto.
+    public async Task<AuthResponseDto> SignupAsync(
         SignupRequestDto dto)
     {
         // Check whether the username is already taken.

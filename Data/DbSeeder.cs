@@ -23,7 +23,7 @@ public static class DbSeeder
                 Username = "admin",
                 Email = "admin@inventory.local",
 
-                
+
                 // Never store the password directly.
                 PasswordHash = passwordHasher.HashPassword(
                     "AdminPassword123!"),
@@ -33,7 +33,7 @@ public static class DbSeeder
                 CreatedDate = DateTime.UtcNow
             };
 
-            context.Users.Add(admin); // this loads the data into the c# level 
+            context.Users.Add(admin); // this loads the data into the c# level
         }
 
         // Check whether a normal test user already exists.
@@ -48,7 +48,7 @@ public static class DbSeeder
                 Username = "user",
                 Email = "user@inventory.local",
 
-                
+
                 // Never store the password directly.
                 PasswordHash = passwordHasher.HashPassword(
                     "UserPassword123!"),
@@ -58,9 +58,9 @@ public static class DbSeeder
                 CreatedDate = DateTime.UtcNow
             };
 
-            context.Users.Add(user); // this loads the data into the c# level 
+            context.Users.Add(user); // this loads the data into the c# level
         }
 
-        await context.SaveChangesAsync(); // this actually makes chages to the db 
+        await context.SaveChangesAsync(); // this actually makes changes to the db
     }
 }

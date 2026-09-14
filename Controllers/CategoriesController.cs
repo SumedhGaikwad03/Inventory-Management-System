@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 namespace InventoryApi.Controllers;
 
 [ApiController]
-[Authorize] // this means only the request with an vaild token has access to the code block below 
+[Authorize] // this means only the request with a valid token has access to the code block below
 [Route("api/[controller]")]
 public class CategoriesController : ControllerBase
 {
-    private readonly ICategoryService _categoryService;  // di injecttion of catgory 
+    private readonly ICategoryService _categoryService;  // di injection of category
 
     public CategoriesController(ICategoryService categoryService)
     {

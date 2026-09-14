@@ -14,7 +14,7 @@ export interface AuthContextType {
   logout: () => void;
 }
 
-//AuthContext.tsx owns the current authentication state, 
+//AuthContext.tsx owns the current authentication state,
 // restores it when the app starts, updates it after login/logout, and reacts when the backend says the token is invalid.
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);
-    // when client.ts emits unautharised this part here catches it 
+    // when client.ts emits unauthorized this part here catches it
     return () => {
       window.removeEventListener('auth:unauthorized', handleUnauthorized);
     };

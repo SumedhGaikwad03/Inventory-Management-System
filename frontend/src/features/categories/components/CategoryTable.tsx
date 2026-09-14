@@ -4,7 +4,7 @@ import { formatDate } from '../../../utils/formatters.ts';
 import { Button } from '../../../components/ui/Button.tsx';
 
 
-// it receives catagories form the parent 
+// it receives categories from the parent
 interface CategoryTableProps {
   categories: CategoryResponseDto[];
   isAdmin: boolean;
@@ -79,21 +79,20 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
                 {isAdmin && (
                   <td style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>
                     <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                      {/* this travels back to the main parent page so it shows the edit modal */}
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onEdit(category)}// this travels back to the main parent 
-                        // page so it shows the the edit modal 
+                        onClick={() => onEdit(category)}
                         title="Edit Category"
                       >
                         Edit
                       </Button>
+                      {/* same this props bubble upwards and the category api then handles it from the category page */}
                       <Button
                         variant="danger"
                         size="sm"
                         onClick={() => onDelete(category)}
-                        // same this proprs bubble upwards and the catgori api then handels it form 
-                        // the catagiry page 
                         title="Delete Category"
                       >
                         Delete

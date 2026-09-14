@@ -191,9 +191,9 @@ Standard users can also register new accounts directly through the **Sign Up** p
 The database is normalized across four primary entities configured in `Data/InventoryDbContext.cs`:
 
 - **Users**: Stores credentials (salted PBKDF2 hash), email, and system roles (`Admin` vs `User`).
-- **Categories**: Defines product categories with unique name constraints.
-- **Products**: Contains item stock records, pricing (`decimal(18,2)`), and category foreign keys.
-- **InventoryTransactions**: Logs inventory stock changes with transaction type (`Restock`, `Sale`, `Damage`, `Return`), quantity delta, timestamp, and user reference.
+- **Categories**: Defines product categories with unique name constraints, a maximum name length of 100 characters (`nvarchar(100)`), and optional description up to 1000 characters (`nvarchar(1000)`).
+- **Products**: Contains item stock records, maximum name length of 100 characters (`nvarchar(100)`), pricing (`decimal(18,2)`), and category foreign keys.
+- **InventoryTransactions**: Logs inventory stock changes with bounded transaction type (`nvarchar(20)`: `Restock`, `Sale`, `Damage`, `Return`, `Adjustment`), quantity delta, timestamp, and user reference.
 
 ### Foreign Key & Delete Behaviors
 - **Category → Product**: `DeleteBehavior.Restrict` (A category cannot be deleted while products are assigned to it).

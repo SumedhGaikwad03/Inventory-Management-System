@@ -17,7 +17,7 @@ import type {
 } from '../../../types/index.ts';
 
 export const CategoriesPage: React.FC = () => {
-  const { isAdmin } = useAuth(); // checks if the user is admin 
+  const { isAdmin } = useAuth(); // checks if the user is admin
 
   const [categories, setCategories] = useState<CategoryResponseDto[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -40,17 +40,17 @@ export const CategoriesPage: React.FC = () => {
     setError(null);
     try {
       const data = await categoryApi.getAll();
-      setCategories(data); // here we populate the catagory data in the form 
+      setCategories(data); // here we populate the category data in the form
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
-  }, []); // callback is keep the ref unless compnent is recreated 
+  }, []); // callback is to keep the ref unless component is recreated
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]); // when component mounts call fetch catagories 
+  }, [fetchCategories]); // when component mounts call fetch categories
 
   // Open modal in Create mode
   const handleOpenCreate = () => {
@@ -80,18 +80,19 @@ export const CategoriesPage: React.FC = () => {
     setModalError(null);
     try {
       if (editingCategory) {
-        await categoryApi.update(editingCategory.id, data);//this is to update
-        // the data 
+        // this is to update the data
+        await categoryApi.update(editingCategory.id, data);
       } else {
+        // this is to create new data as we call differnt endpoint for this
         await categoryApi.create(data);
-        //this is to create new data as we call differnt endpoint for this
       }
-      await fetchCategories(); // refecth the collection form backend to find out whats true 
+      // refecth the collection form backend to find out whats true
+      await fetchCategories();
       setIsModalOpen(false);
       setEditingCategory(null);
     } catch (err) {
-      setModalError(getErrorMessage(err)); 
-      // the get error msg converts the error to a string and set modal error is populated 
+      // the get error msg converts the error to a string and set modal error is populated
+      setModalError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +113,7 @@ export const CategoriesPage: React.FC = () => {
     setDeleteError(null);
   };
 
-  // Execute deletion , same orocess as above 
+  // Execute deletion , same orocess as above
   const handleConfirmDelete = async () => {
     if (!deletingCategory) return;
     setIsDeleting(true);
@@ -129,7 +130,7 @@ export const CategoriesPage: React.FC = () => {
     }
   };
 
-   // these are rendering below 
+   // these are rendering below
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <PageHeader

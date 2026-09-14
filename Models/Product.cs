@@ -10,7 +10,7 @@ public class Product
 
     public decimal Price { get; set; }
 
-    // Foreign key that we browerd from the category table 
+    // Foreign key that we borrowed from the category table
     public int CategoryId { get; set; }
 
     public DateTime CreatedDate { get; set; }
@@ -18,12 +18,11 @@ public class Product
     public DateTime UpdatedDate { get; set; }
 
     // Navigation property , as it allows ef core to navigate from
-    // catagory to products 
-    //its kind of an relantional objects 
-    public Category? Category { get; set; } // its an navigation property that helps to map products to catgories 
+    // category to products
+    //its kind of a relational object
+    public Category? Category { get; set; } // it's a navigation property that helps to map products to categories
 
-     public ICollection<InventoryTransaction> InventoryTransactions { get; set; }
+    // ICollection<InventoryTransaction> represents a collection of related InventoryTransaction objects in C# memory.
+    public ICollection<InventoryTransaction> InventoryTransactions { get; set; }
         = new List<InventoryTransaction>();
-
-        // ICollection<InventoryTransaction> represents a collection of related InventoryTransaction objects in C# memory.
 }

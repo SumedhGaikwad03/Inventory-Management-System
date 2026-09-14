@@ -7,21 +7,23 @@ namespace InventoryApi.Services.Products;
 
 public class ProductService : IProductService
 {
+    // the service needs to access db from ef core
     private readonly InventoryDbContext _context;
-    //the service need to access db from ef core 
 
+    // as when creating product service give me inventory Dbcontext
+    // this helps to track the entity in the c# db
     public ProductService(InventoryDbContext context)
     {
         _context = context; // DI injection of dbcontext into service class
-    }// as when creating product service give me inventory Dbcontext 
-    // this helps to treack the entity in the c# db 
+    }
 
 
 public async Task<ProductPagedResponseDto> GetAllAsync(
     ProductQueryDto query)
 {
     // Validate pagination values.
-    if (query.Page < 1) // checks if the query is vaild by the sender 
+    // checks if the query is valid by the sender
+    if (query.Page < 1)
     {
         throw new ArgumentException(
             "Page must be greater than 0.");
@@ -38,31 +40,24 @@ public async Task<ProductPagedResponseDto> GetAllAsync(
     IQueryable<Product> productsQuery = _context.Products
         .Include(p => p.Category);
 
-    // --------------------------------------------------
-    // 1. SEARCH
-    // --------------------------------------------------
-
-    if (!string.IsNullOrWhiteSpace(query.Search)) // this is seraching by keyword 
+    // 1. Search
+    // this is searching by keyword
+    if (!string.IsNullOrWhiteSpace(query.Search))
     {
         var searchKeyword = query.Search.Trim().ToLower();
-        productsQuery = productsQuery.Where(p => 
+        productsQuery = productsQuery.Where(p =>
         p.Name.ToLower().Contains(searchKeyword));
     }
 
-    // --------------------------------------------------
-    // 2. LOW-STOCK FILTER
-    // --------------------------------------------------
-
-    if (query.LowStock) // this is embed query as within the url 
+    // 2. Low-stock filter
+    // this is embedded query as within the url
+    if (query.LowStock)
     {
         productsQuery = productsQuery.Where(p =>
             p.Quantity <= 5);
     }
 
-    // --------------------------------------------------
-    // 3. COUNT
-    // --------------------------------------------------
-
+    // 3. Count
     // Count AFTER filtering.
     // This tells us how many matching products exist.
     var totalItems = await productsQuery.CountAsync();
@@ -71,11 +66,9 @@ public async Task<ProductPagedResponseDto> GetAllAsync(
     var totalPages = (int)Math.Ceiling(
         totalItems / (double)query.PageSize);
 
-    // --------------------------------------------------
-    // 4. SORTING
-    // --------------------------------------------------
-
-    productsQuery = query.SortBy?.ToLower() switch // again embbeded query for the same 
+    // 4. Sorting
+    // again embedded query for the same
+    productsQuery = query.SortBy?.ToLower() switch
     {
         "name" => query.SortOrder?.ToLower() == "desc"
             ? productsQuery.OrderByDescending(p => p.Name)
@@ -92,12 +85,10 @@ public async Task<ProductPagedResponseDto> GetAllAsync(
         _ => productsQuery.OrderBy(p => p.Id)
     };
 
-    // --------------------------------------------------
-    // 5. PAGINATION
-    // --------------------------------------------------
-
-    var products = await productsQuery 
-        .Skip((query.Page - 1) * query.PageSize) // it skips over to show items for appropriate pages 
+    // 5. Pagination
+    // it skips over to show items for appropriate pages
+    var products = await productsQuery
+        .Skip((query.Page - 1) * query.PageSize)
         .Take(query.PageSize)
         .Select(p => new ProductResponseDto
         {
@@ -112,10 +103,7 @@ public async Task<ProductPagedResponseDto> GetAllAsync(
         })
         .ToListAsync();
 
-    // --------------------------------------------------
-    // 6. RESPONSE
-    // --------------------------------------------------
-
+    // 6. Response
     return new ProductPagedResponseDto
     {
         Items = products,
@@ -165,10 +153,11 @@ public async Task<ProductResponseDto> CreateAsync(CreateProductDto dto)
         UpdatedDate = DateTime.UtcNow
     };
 
-    _context.Products.Add(product); //at this point ef core begins to
-    // track this new identity 
+    // at this point ef core begins to track this new identity
+    _context.Products.Add(product);
 
-    await _context.SaveChangesAsync(); //actual insertion in db 
+    // actual insertion in db
+    await _context.SaveChangesAsync();
 
     //Map directly from memory to save a whole DB query
     return new ProductResponseDto
@@ -182,9 +171,6 @@ public async Task<ProductResponseDto> CreateAsync(CreateProductDto dto)
         CreatedDate = product.CreatedDate,
         UpdatedDate = product.UpdatedDate
     };
-
-    //return await GetByIdAsync(product.Id)
-     //   ?? throw new InvalidOperationException("Product could not be retrieved after creation.");
 }
 
 public async Task<ProductResponseDto?> UpdateAsync(

@@ -11,6 +11,6 @@ public class CreateInventoryTransactionDto
     public int QuantityChanged { get; set; }
 
     [Required]
-    [StringLength(50)]
+    [StringLength(20)]
     public string TransactionType { get; set; } = string.Empty;
 }

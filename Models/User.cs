@@ -15,8 +15,9 @@ public class User
 
     public DateTime CreatedDate { get; set; }
 
+    // C# represents the application model using objects, properties, collections, and navigation properties.
+    // EF Core understands/maps those relationships to the database. SQL Server
+    //  ultimately stores the simple relational representation: rows, columns, primary keys, and foreign keys
     public ICollection<InventoryTransaction> InventoryTransactions { get; set; }
     = new List<InventoryTransaction>();
-} // C# represents the application model using objects, properties, collections, and navigation properties. 
-// EF Core understands/maps those relationships to the database. SQL Server
-//  ultimately stores the simple relational representation: rows, columns, primary keys, and foreign keys
+}
