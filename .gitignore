@@ -1,0 +1,19 @@
+# .NET build output
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Environment / secrets
+.env
+.env.*
