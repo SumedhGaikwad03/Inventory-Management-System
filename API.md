@@ -1,131 +1,136 @@
-# 𝗜𝗡𝗩𝗘𝗡𝗧𝗢𝗥𝗬 𝗠𝗔𝗡𝗔𝗚𝗘𝗠𝗘𝗡𝗧 𝗦𝗬𝗦𝗧𝗘𝗠 𝗔𝗣𝗜
-════════════════════════════════════════════════════════════
+# Inventory Management System API
 
-## 𝗢𝗩𝗘𝗥𝗩𝗜𝗘𝗪
-──────────
+The Inventory Management System API is a RESTful service built with ASP.NET Core and Microsoft SQL Server. It powers the backend for user authentication, product catalog management, category organization, stock level adjustments, and inventory transaction auditing.
 
-The Inventory Management System API is a REST API built with ASP.NET Core and SQL Server.
+The API implements JSON Web Token (JWT) authentication and enforces Role-Based Access Control (RBAC) across standard **User** and **Admin** roles.
 
-It provides the backend for managing:
+---
 
-  • User accounts and authentication  
-  • Products  
-  • Categories  
-  • Stock adjustments  
-  • Inventory transaction history  
+## Table of Contents
 
-The API uses JWT authentication for secure access and supports role-based permissions for Standard Users and Administrators.
+- [Overview](#overview)
+- [Base URL](#base-url)
+- [Authentication](#authentication)
+  - [Permissions](#permissions)
+- [Endpoint Summary](#endpoint-summary)
+  - [Authentication](#authentication-summary)
+  - [Products](#products-summary)
+  - [Categories](#categories-summary)
+  - [Inventory Transactions](#inventory-transactions-summary)
+- [API Endpoints](#api-endpoints)
+  - [Authentication](#authentication-endpoints)
+    - [POST /api/auth/signup](#post-apiauthsignup)
+    - [POST /api/auth/login](#post-apiauthlogin)
+  - [Products](#products-endpoints)
+    - [GET /api/products](#get-apiproducts)
+    - [GET /api/products/{id}](#get-apiproductsid)
+    - [POST /api/products](#post-apiproducts)
+    - [PUT /api/products/{id}](#put-apiproductsid)
+    - [DELETE /api/products/{id}](#delete-apiproductsid)
+  - [Categories](#categories-endpoints)
+    - [GET /api/categories](#get-apicategories)
+    - [GET /api/categories/{id}](#get-apicategoriesid)
+    - [POST /api/categories](#post-apicategories)
+    - [PUT /api/categories/{id}](#put-apicategoriesid)
+    - [DELETE /api/categories/{id}](#delete-apicategoriesid)
+  - [Inventory Transactions](#inventory-transactions-endpoints)
+    - [POST /api/inventorytransactions](#post-apiinventorytransactions)
+    - [GET /api/inventorytransactions](#get-apiinventorytransactions)
+    - [GET /api/inventorytransactions/{id}](#get-apiinventorytransactionsid)
+    - [GET /api/inventorytransactions/product/{productId}](#get-apiinventorytransactionsproductproductid)
+- [Error Responses](#error-responses)
+- [Important Rules](#important-rules)
 
+---
 
-## 𝗕𝗔𝗦𝗘 𝗨𝗥𝗟
-──────────
+## Overview
+
+The API manages core warehouse and inventory operations:
+
+- **User Accounts & Auth**: Registration and credential validation returning signed JWT tokens.
+- **Products Catalog**: Product item management with real-time stock levels, pricing, category references, and paginated search.
+- **Categories**: Logical grouping of items with referential delete protection and uniqueness constraints.
+- **Stock Adjustments**: Audited quantity updates (`Restock`, `Sale`, `Damage`, `Return`) with deficit protection against negative stock.
+- **Audit Ledger**: Comprehensive historical transaction logging capturing user claims, quantity deltas, and UTC timestamps.
+
+---
+
+## Base URL
 
 ```text
 http://localhost:5062/api
 ```
 
+---
 
-## 𝗔𝗨𝗧𝗛𝗘𝗡𝗧𝗜𝗖𝗔𝗧𝗜𝗢𝗡
-────────────────
+## Authentication
 
-• User registration (`/api/auth/signup`) and login (`/api/auth/login`) are public.
+- Registration (`/api/auth/signup`) and login (`/api/auth/login`) are publicly accessible endpoints.
+- Authenticated requests must provide a valid JWT token in the standard HTTP `Authorization` header:
+  ```http
+  Authorization: Bearer <your-jwt-token>
+  ```
+- **Token Expiration**: 60 minutes with `ClockSkew = TimeSpan.Zero`.
+- **User Claims**: User identity and role attributes (`NameIdentifier`, `Name`, `Role`) are resolved directly from token claims.
 
-• Logging in returns a JSON Web Token (JWT).
+### Permissions
 
-• Protected endpoints require the token sent in the HTTP Authorization header:
-  `Authorization: Bearer <your-jwt-token>`
+- **User**: Read-only access to list and view products, categories, and dashboard metrics. Blocked from write operations (create, update, delete, stock adjustments).
+- **Admin**: Full read and write permissions across all entities, product/category management, stock adjustments, and transaction audit logs.
 
-• Token expiration is set to 60 minutes with zero clock skew.
+---
 
-• User identity is read directly from token claims (`NameIdentifier`, `Name`, `Role`).
+## Endpoint Summary
 
+### <a id="authentication-summary"></a>Authentication
 
-__Permissions__
-───────────────
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| `POST` | `/api/auth/signup` | Public | Register a new user account |
+| `POST` | `/api/auth/login` | Public | Authenticate user credentials and receive a JWT |
 
-• User - Can view products, categories, and dashboard metrics. Blocked from write operations.
+### <a id="products-summary"></a>Products
 
-• Admin - Full access to create, edit, delete products and categories, execute stock adjustments, and view audit transaction history.
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| `GET` | `/api/products` | User, Admin | List, search, filter, and sort products with pagination |
+| `GET` | `/api/products/{id}` | User, Admin | Get full details for a single product by ID |
+| `POST` | `/api/products` | Admin | Create a new product |
+| `PUT` | `/api/products/{id}` | Admin | Update an existing product |
+| `DELETE` | `/api/products/{id}` | Admin | Delete a product from inventory |
 
+### <a id="categories-summary"></a>Categories
 
-## 𝗘𝗡𝗗𝗣𝗢𝗜𝗡𝗧 𝗦𝗨𝗠𝗠𝗔𝗥𝗬
-══════════════════
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| `GET` | `/api/categories` | User, Admin | List all product categories |
+| `GET` | `/api/categories/{id}` | User, Admin | Get single category details by ID |
+| `POST` | `/api/categories` | Admin | Create a new category |
+| `PUT` | `/api/categories/{id}` | Admin | Update an existing category name and description |
+| `DELETE` | `/api/categories/{id}` | Admin | Delete a category (blocked if active products exist) |
 
-Authentication
-──────────────
-• POST /api/auth/signup  
-  Public - Register a new user account.
+### <a id="inventory-transactions-summary"></a>Inventory Transactions
 
-• POST /api/auth/login  
-  Public - Authenticate user and receive a JWT.
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| `POST` | `/api/inventorytransactions` | Admin | Record a stock adjustment and update product inventory |
+| `GET` | `/api/inventorytransactions` | Admin | List all transaction history records (newest first) |
+| `GET` | `/api/inventorytransactions/{id}` | Admin | Get transaction details by ID |
+| `GET` | `/api/inventorytransactions/product/{productId}` | Admin | List transaction history for a specific product |
 
+---
 
-Products
-────────
-• GET /api/products  
-  User, Admin - List, search, filter, and sort products with pagination.
+## API Endpoints
 
-• GET /api/products/{id}  
-  User, Admin - Get product details by ID.
+### <a id="authentication-endpoints"></a>Authentication
 
-• POST /api/products  
-  Admin - Create a new product.
+#### `POST /api/auth/signup`
 
-• PUT /api/products/{id}  
-  Admin - Update an existing product.
+Registers a new user account with the standard `User` role.
 
-• DELETE /api/products/{id}  
-  Admin - Delete a product.
+**Access:** Public
 
-
-Categories
-──────────
-• GET /api/categories  
-  User, Admin - List all categories.
-
-• GET /api/categories/{id}  
-  User, Admin - Get category details by ID.
-
-• POST /api/categories  
-  Admin - Create a new category.
-
-• PUT /api/categories/{id}  
-  Admin - Update an existing category.
-
-• DELETE /api/categories/{id}  
-  Admin - Delete a category.
-
-
-Inventory Transactions
-──────────────────────
-• GET /api/inventorytransactions  
-  Admin - List all inventory transaction history.
-
-• GET /api/inventorytransactions/{id}  
-  Admin - Get transaction details by ID.
-
-• GET /api/inventorytransactions/product/{id}  
-  Admin - List transaction history for a specific product.
-
-• POST /api/inventorytransactions  
-  Admin - Record a stock adjustment transaction.
-
-
-## 𝗔𝗣𝗜 𝗘𝗡𝗗𝗣𝗢𝗜𝗡𝗧𝗦
-════════════════
-
-### 𝗔𝗨𝗧𝗛𝗘𝗡𝗧𝗜𝗖𝗔𝗧𝗜𝗢𝗡
-────────────────
-
-__POST /api/auth/signup__
-─────────────────────────
-
-Registers a new user account with the standard User role.
-
-Access: Public
-
-__Request__
-──────────
+**Request**
 
 ```http
 POST /api/auth/signup
@@ -138,8 +143,7 @@ Content-Type: application/json
 }
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -150,26 +154,20 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  User registered successfully.
+- `200 OK` - User registered successfully.
+- `400 Bad Request` - Username already taken or validation failure (password must be at least 8 characters, valid email required).
 
-• 400 Bad Request  
-  Username already taken or validation failure (password must be at least 8 characters, valid email required).
+---
 
+#### `POST /api/auth/login`
 
+Authenticates user credentials and returns a signed JWT token.
 
-__POST /api/auth/login__
-────────────────────────
+**Access:** Public
 
-Authenticates user credentials and returns a signed JWT.
-
-Access: Public
-
-__Request__
-──────────
+**Request**
 
 ```http
 POST /api/auth/login
@@ -181,8 +179,7 @@ Content-Type: application/json
 }
 ```
 
-__Response (Success)__
-─────────────────────
+**Response (Success)**
 
 ```json
 {
@@ -190,8 +187,7 @@ __Response (Success)__
 }
 ```
 
-__Response (Invalid Credentials)__
-─────────────────────────────────
+**Response (Invalid Credentials)**
 
 ```json
 {
@@ -202,61 +198,41 @@ __Response (Invalid Credentials)__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Login successful, JWT returned.
+- `200 OK` - Login successful, JWT returned.
+- `400 Bad Request` - Missing username or password.
+- `401 Unauthorized` - Invalid username or password.
 
-• 400 Bad Request  
-  Missing username or password.
+---
 
-• 401 Unauthorized  
-  Invalid username or password.
+### <a id="products-endpoints"></a>Products
 
-
-
-### 𝗣𝗥𝗢𝗗𝗨𝗖𝗧𝗦
-───────────
-
-__GET /api/products__
-─────────────────────
+#### `GET /api/products`
 
 Retrieves a paginated list of products with optional search, sorting, category, and low-stock filters.
 
-Access: User, Admin
+**Access:** User, Admin
 
-__Query Parameters__
-───────────────────
+**Query Parameters**
 
-• search  
-  Optional. Substring to match against product name.
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `search` | No | - | Substring to match against product name |
+| `page` | No | `1` | Page number (must be >= 1) |
+| `pageSize` | No | `10` | Number of items per page (1 to 100) |
+| `sortBy` | No | - | Sort column: `name`, `price`, or `quantity` (defaults to ID) |
+| `sortOrder` | No | `asc` | Sort direction: `asc` or `desc` |
+| `lowStock` | No | `false` | When `true`, filters items where quantity <= 5 |
 
-• page  
-  Optional. Default is 1. Page number must be at least 1.
-
-• pageSize  
-  Optional. Default is 10. Must be between 1 and 100.
-
-• sortBy  
-  Optional. Supported values are name, price, and quantity. Defaults to product ID.
-
-• sortOrder  
-  Optional. Default is asc. Supported values are asc and desc.
-
-• lowStock  
-  Optional. Default is false. When true, returns products with quantity less than or equal to 5.
-
-__Request__
-──────────
+**Request**
 
 ```http
 GET /api/products?search=desk&page=1&pageSize=10&sortBy=price&sortOrder=asc
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -279,37 +255,28 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Products retrieved successfully.
+- `200 OK` - Products retrieved successfully.
+- `400 Bad Request` - Invalid query parameters (e.g. invalid `page` or `pageSize`).
+- `401 Unauthorized` - Missing or invalid token.
 
-• 400 Bad Request  
-  Invalid page or pageSize query parameters.
+---
 
-• 401 Unauthorized  
-  Missing or invalid token.
-
-
-
-__GET /api/products/{id}__
-──────────────────────────
+#### `GET /api/products/{id}`
 
 Retrieves full details for a single product by ID.
 
-Access: User, Admin
+**Access:** User, Admin
 
-__Request__
-──────────
+**Request**
 
 ```http
 GET /api/products/1
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -324,29 +291,21 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Product found.
+- `200 OK` - Product found.
+- `401 Unauthorized` - Missing or invalid token.
+- `404 Not Found` - Product ID does not exist.
 
-• 401 Unauthorized  
-  Missing or invalid token.
+---
 
-• 404 Not Found  
-  Product ID does not exist.
+#### `POST /api/products`
 
+Creates a new product in the inventory catalog.
 
+**Access:** Admin
 
-__POST /api/products__
-──────────────────────
-
-Creates a new product item in the inventory catalog.
-
-Access: Admin
-
-__Request__
-──────────
+**Request**
 
 ```http
 POST /api/products
@@ -361,8 +320,7 @@ Content-Type: application/json
 }
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -377,32 +335,22 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 201 Created  
-  Product created successfully.
+- `201 Created` - Product created successfully.
+- `400 Bad Request` - Validation error or referenced category ID does not exist.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
 
-• 400 Bad Request  
-  Validation error or referenced category ID does not exist.
+---
 
-• 401 Unauthorized  
-  Missing or invalid token.
-
-• 403 Forbidden  
-  User is not an Admin.
-
-
-
-__PUT /api/products/{id}__
-──────────────────────────
+#### `PUT /api/products/{id}`
 
 Updates an existing product's name, quantity, price, or category.
 
-Access: Admin
+**Access:** Admin
 
-__Request__
-──────────
+**Request**
 
 ```http
 PUT /api/products/5
@@ -417,8 +365,7 @@ Content-Type: application/json
 }
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -433,85 +380,60 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Product updated successfully.
+- `200 OK` - Product updated successfully.
+- `400 Bad Request` - Validation failure or referenced category does not exist.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
+- `404 Not Found` - Product ID not found.
 
-• 400 Bad Request  
-  Validation failure or referenced category does not exist.
+---
 
-• 401 Unauthorized  
-  Missing or invalid token.
+#### `DELETE /api/products/{id}`
 
-• 403 Forbidden  
-  User is not an Admin.
+Deletes a product and cascades removal of associated transaction history from the database.
 
-• 404 Not Found  
-  Product ID not found.
+**Access:** Admin
 
-
-
-__DELETE /api/products/{id}__
-─────────────────────────────
-
-Deletes a product from the database.
-
-Access: Admin
-
-__Request__
-──────────
+**Request**
 
 ```http
 DELETE /api/products/5
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response__
-──────────
+**Response**
 
 ```http
 HTTP/1.1 204 No Content
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 204 No Content  
-  Product deleted successfully.
+- `204 No Content` - Product deleted successfully.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
+- `404 Not Found` - Product ID not found.
 
-• 401 Unauthorized  
-  Missing or invalid token.
+---
 
-• 403 Forbidden  
-  User is not an Admin.
+### <a id="categories-endpoints"></a>Categories
 
-• 404 Not Found  
-  Product ID not found.
-
-
-
-### 𝗖𝗔𝗧𝗘𝗚𝗢𝗥𝗜𝗘𝗦
-─────────────
-
-__GET /api/categories__
-───────────────────────
+#### `GET /api/categories`
 
 Retrieves all product categories.
 
-Access: User, Admin
+**Access:** User, Admin
 
-__Request__
-──────────
+**Request**
 
 ```http
 GET /api/categories
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 [
@@ -530,34 +452,27 @@ __Response__
 ]
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Categories retrieved successfully.
+- `200 OK` - Categories retrieved successfully.
+- `401 Unauthorized` - Missing or invalid token.
 
-• 401 Unauthorized  
-  Missing or invalid token.
+---
 
-
-
-__GET /api/categories/{id}__
-────────────────────────────
+#### `GET /api/categories/{id}`
 
 Retrieves single category details by ID.
 
-Access: User, Admin
+**Access:** User, Admin
 
-__Request__
-──────────
+**Request**
 
 ```http
 GET /api/categories/1
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -568,29 +483,21 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Category found.
+- `200 OK` - Category found.
+- `401 Unauthorized` - Missing or invalid token.
+- `404 Not Found` - Category ID does not exist.
 
-• 401 Unauthorized  
-  Missing or invalid token.
+---
 
-• 404 Not Found  
-  Category ID does not exist.
-
-
-
-__POST /api/categories__
-────────────────────────
+#### `POST /api/categories`
 
 Creates a new product category.
 
-Access: Admin
+**Access:** Admin
 
-__Request__
-──────────
+**Request**
 
 ```http
 POST /api/categories
@@ -603,8 +510,7 @@ Content-Type: application/json
 }
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -615,32 +521,22 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 201 Created  
-  Category created successfully.
+- `201 Created` - Category created successfully.
+- `400 Bad Request` - Category name already exists or required `name` field is missing.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
 
-• 400 Bad Request  
-  Category name already exists or required name field missing.
+---
 
-• 401 Unauthorized  
-  Missing or invalid token.
+#### `PUT /api/categories/{id}`
 
-• 403 Forbidden  
-  User is not an Admin.
+Updates an existing category's name and description.
 
+**Access:** Admin
 
-
-__PUT /api/categories/{id}__
-────────────────────────────
-
-Updates an existing category name and description.
-
-Access: Admin
-
-__Request__
-──────────
+**Request**
 
 ```http
 PUT /api/categories/3
@@ -653,8 +549,7 @@ Content-Type: application/json
 }
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -665,50 +560,36 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Category updated successfully.
+- `200 OK` - Category updated successfully.
+- `400 Bad Request` - Category name conflict with another existing category.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
+- `404 Not Found` - Category ID not found.
 
-• 400 Bad Request  
-  Category name conflict with another existing category.
+---
 
-• 401 Unauthorized  
-  Missing or invalid token.
+#### `DELETE /api/categories/{id}`
 
-• 403 Forbidden  
-  User is not an Admin.
+Deletes a category from the database. Blocked if products are currently assigned to it (`DeleteBehavior.Restrict`).
 
-• 404 Not Found  
-  Category ID not found.
+**Access:** Admin
 
-
-
-__DELETE /api/categories/{id}__
-───────────────────────────────
-
-Deletes a category from the system.
-
-Access: Admin
-
-__Request__
-──────────
+**Request**
 
 ```http
 DELETE /api/categories/2
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response (Success)__
-─────────────────────
+**Response (Success)**
 
 ```http
 HTTP/1.1 204 No Content
 ```
 
-__Response (Failure - Category has active products)__
-────────────────────────────────────────────────────
+**Response (Failure - Category Has Active Products)**
 
 ```json
 {
@@ -719,53 +600,34 @@ __Response (Failure - Category has active products)__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 204 No Content  
-  Category deleted successfully.
+- `204 No Content` - Category deleted successfully.
+- `400 Bad Request` - Cannot delete category because products are currently assigned to it.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
+- `404 Not Found` - Category ID not found.
 
-• 400 Bad Request  
-  Cannot delete category because products are currently assigned to it.
+---
 
-• 401 Unauthorized  
-  Missing or invalid token.
+### <a id="inventory-transactions-endpoints"></a>Inventory Transactions
 
-• 403 Forbidden  
-  User is not an Admin.
+#### `POST /api/inventorytransactions`
 
-• 404 Not Found  
-  Category ID not found.
+Records a stock adjustment, recalculates product inventory, and logs an immutable audit ledger entry. The acting user ID is securely resolved from the authenticated JWT claims.
 
+**Access:** Admin
 
+**Supported Transaction Types**
 
-### 𝗜𝗡𝗩𝗘𝗡𝗧𝗢𝗥𝗬 𝗧𝗥𝗔𝗡𝗦𝗔𝗖𝗧𝗜𝗢𝗡𝗦
-──────────────────────────────
+| Type | Quantity Sign | Effect | Description |
+|---|---|---|---|
+| `Restock` | Positive (`> 0`) | Adds stock | Incoming stock shipment from supplier |
+| `Return` | Positive (`> 0`) | Adds stock | Customer returns item back to inventory |
+| `Sale` | Negative (`< 0`) | Removes stock | Outgoing customer purchase |
+| `Damage` | Negative (`< 0`) | Removes stock | Damaged or written-off inventory |
 
-__POST /api/inventorytransactions__
-───────────────────────────────────
-
-Records a stock adjustment, updates product stock level, and logs an audit transaction record. The user ID is automatically extracted from the JWT token.
-
-Access: Admin
-
-__Transaction Types__
-────────────────────
-
-• Restock  
-  Quantity must be positive. Adds stock.
-
-• Return  
-  Quantity must be positive. Adds stock.
-
-• Sale  
-  Quantity must be negative. Removes stock.
-
-• Damage  
-  Quantity must be negative. Removes stock.
-
-__Example 1: Restock Request (+10 Units)__
-──────────────────────────────────────────
+**Example 1: Restock Request (+10 Units)**
 
 ```http
 POST /api/inventorytransactions
@@ -779,8 +641,7 @@ Content-Type: application/json
 }
 ```
 
-__Response (200 OK)__
-────────────────────
+**Response (200 OK)**
 
 ```json
 {
@@ -795,8 +656,7 @@ __Response (200 OK)__
 }
 ```
 
-__Example 2: Sale Request (-3 Units)__
-──────────────────────────────────────
+**Example 2: Sale Request (-3 Units)**
 
 ```http
 POST /api/inventorytransactions
@@ -810,8 +670,7 @@ Content-Type: application/json
 }
 ```
 
-__Response (200 OK)__
-────────────────────
+**Response (200 OK)**
 
 ```json
 {
@@ -826,8 +685,7 @@ __Response (200 OK)__
 }
 ```
 
-__Example 3: Negative Stock Error (Deducting more units than available)__
-────────────────────────────────────────────────────────────────────────
+**Example 3: Negative Stock Error (Attempting to deduct more stock than available)**
 
 ```json
 {
@@ -838,40 +696,29 @@ __Example 3: Negative Stock Error (Deducting more units than available)__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Stock updated and transaction logged.
+- `200 OK` - Stock level adjusted and audit transaction logged.
+- `400 Bad Request` - Product not found, or quantity change would result in negative stock.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
 
-• 400 Bad Request  
-  Product not found, or quantity change would result in negative stock.
+---
 
-• 401 Unauthorized  
-  Missing or invalid token.
-
-• 403 Forbidden  
-  User is not an Admin.
-
-
-
-__GET /api/inventorytransactions__
-──────────────────────────────────
+#### `GET /api/inventorytransactions`
 
 Lists all inventory transaction records ordered from newest to oldest.
 
-Access: Admin
+**Access:** Admin
 
-__Request__
-──────────
+**Request**
 
 ```http
 GET /api/inventorytransactions
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 [
@@ -898,37 +745,28 @@ __Response__
 ]
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Transactions retrieved.
+- `200 OK` - Transactions retrieved.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
 
-• 401 Unauthorized  
-  Missing or invalid token.
+---
 
-• 403 Forbidden  
-  User is not an Admin.
-
-
-
-__GET /api/inventorytransactions/{id}__
-───────────────────────────────────────
+#### `GET /api/inventorytransactions/{id}`
 
 Retrieves details for a single transaction by ID.
 
-Access: Admin
+**Access:** Admin
 
-__Request__
-──────────
+**Request**
 
 ```http
 GET /api/inventorytransactions/12
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 {
@@ -943,40 +781,29 @@ __Response__
 }
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Transaction found.
+- `200 OK` - Transaction found.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
+- `404 Not Found` - Transaction ID not found.
 
-• 401 Unauthorized  
-  Missing or invalid token.
+---
 
-• 403 Forbidden  
-  User is not an Admin.
-
-• 404 Not Found  
-  Transaction ID not found.
-
-
-
-__GET /api/inventorytransactions/product/{productId}__
-──────────────────────────────────────────────────────
+#### `GET /api/inventorytransactions/product/{productId}`
 
 Lists all transaction history records for a single product.
 
-Access: Admin
+**Access:** Admin
 
-__Request__
-──────────
+**Request**
 
 ```http
 GET /api/inventorytransactions/product/1
 Authorization: Bearer <your-jwt-token>
 ```
 
-__Response__
-──────────
+**Response**
 
 ```json
 [
@@ -993,30 +820,21 @@ __Response__
 ]
 ```
 
-__Status Codes__
-───────────────
+**Status Codes**
 
-• 200 OK  
-  Product transactions retrieved.
+- `200 OK` - Product transactions retrieved.
+- `401 Unauthorized` - Missing or invalid token.
+- `403 Forbidden` - User is not an Admin.
 
-• 401 Unauthorized  
-  Missing or invalid token.
+---
 
-• 403 Forbidden  
-  User is not an Admin.
+## Error Responses
 
+The API formats all error responses according to the **RFC 7807 ProblemDetails** specification.
 
+### 1. Business Rule Failure (`400 Bad Request`)
 
-## 𝗘𝗥𝗥𝗢𝗥 𝗥𝗘𝗦𝗣𝗢𝗡𝗦𝗘𝗦
-────────────────
-
-The API formats all error responses using the standard RFC 7807 ProblemDetails specification.
-
-
-__1. Business Rule Failure (400 Bad Request)__
-─────────────────────────────────────────────
-
-Returned when a business validation rule fails:
+Returned when a business validation rule is violated:
 
 ```json
 {
@@ -1027,11 +845,9 @@ Returned when a business validation rule fails:
 }
 ```
 
+### 2. Model Validation Failure (`400 Bad Request`)
 
-__2. Model Validation Failure (400 Bad Request)__
-────────────────────────────────────────────────
-
-Returned when input fields fail DataAnnotation constraints:
+Returned when request body fields fail DataAnnotation validation attributes:
 
 ```json
 {
@@ -1049,49 +865,29 @@ Returned when input fields fail DataAnnotation constraints:
 }
 ```
 
+### Common HTTP Status Codes
 
-__Common HTTP Status Codes__
-────────────────────────────
+| Status | Meaning | Description |
+|---|---|---|
+| `200 OK` | Success | Request completed successfully |
+| `201 Created` | Created | A new resource was created |
+| `204 No Content` | No Content | Resource deleted successfully (no response body) |
+| `400 Bad Request` | Bad Request | Request payload or business rule validation failed |
+| `401 Unauthorized` | Unauthorized | Authentication token is missing, expired, or invalid |
+| `403 Forbidden` | Forbidden | Authenticated user lacks required role (e.g. User attempting Admin action) |
+| `404 Not Found` | Not Found | Requested resource ID does not exist |
+| `500 Internal Server Error` | Server Error | An unhandled server error occurred |
 
-• 200 OK  
-  Request completed successfully.
+---
 
-• 201 Created  
-  A new resource was created.
+## Important Rules
 
-• 204 No Content  
-  Resource was deleted successfully.
-
-• 400 Bad Request  
-  Request data or business rules are invalid.
-
-• 401 Unauthorized  
-  Authentication token is missing, expired, or invalid.
-
-• 403 Forbidden  
-  Authenticated user lacks the required role (e.g. standard User attempting Admin action).
-
-• 404 Not Found  
-  Requested resource ID does not exist.
-
-• 500 Internal Server Error  
-  An unexpected server error occurred.
-
-
-
-## 𝗜𝗠𝗣𝗢𝗥𝗧𝗔𝗡𝗧 𝗥𝗨𝗟𝗘𝗦
-─────────────────
-
-• **Category Reference**: Products must reference an existing category ID. Creating or updating a product with an invalid category ID is rejected.
-
-• **Category Name Uniqueness**: Category names must be unique across the catalog. Duplicate names are rejected.
-
-• **Category Delete Protection**: A category with products assigned to it cannot be deleted.
-
-• **No Negative Inventory**: Transactions that would cause product stock to fall below zero are rejected.
-
-• **Automatic User Tracking**: When recording an inventory adjustment, the user ID is securely taken from the JWT token, ensuring an authentic audit log.
-
-• **Product Deletion Cascade**: Deleting a product removes its associated transaction history from the database.
-
-• **Role Enforcement**: Standard users can view products and categories, but all create, edit, delete, and stock adjustment operations are restricted to Admin accounts.
+- **JWT Authentication & Claims**: Protected endpoints require a valid JWT bearer token. Token expiration is 60 minutes with zero clock skew. User identity (`NameIdentifier`, `Name`, `Role`) is extracted directly from token claims.
+- **Role Enforcement**: Standard `User` accounts have read-only access. All create, update, delete, and stock adjustment operations require the `Admin` role.
+- **Category Reference**: Products must reference a valid `categoryId`. Assigning a non-existent category is rejected.
+- **Category Name Uniqueness**: Category names must be unique across the catalog. Duplicate names are rejected with `400 Bad Request`.
+- **Category Delete Protection**: Categories with active products assigned cannot be deleted (`DeleteBehavior.Restrict`).
+- **Deficit Prevention**: Stock adjustments that would cause inventory to drop below zero are rejected with `400 Bad Request`.
+- **Automatic Audit Tracking**: Transaction logs automatically record the authenticated user's ID from JWT claims, preventing audit spoofing.
+- **Product Cascade Deletion**: Deleting a product removes its associated transaction history (`DeleteBehavior.Cascade`).
+- **Client-Side Dashboard**: The frontend dashboard queries the product and category endpoints concurrently to compute metrics (total products, low stock items, total inventory value); there is no separate `/api/dashboard` backend endpoint.
