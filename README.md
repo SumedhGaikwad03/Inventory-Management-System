@@ -10,7 +10,7 @@ The application manages product cataloging, category organization, inventory sto
 
 Comprehensive endpoint specifications, request/response schemas, authentication requirements, and role permissions are available in the dedicated documentation file:
 
-- **[View API Documentation](API.md)**
+- **[View API Documentation](docs/api.md)**
 
 ---
 
