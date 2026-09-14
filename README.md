@@ -6,6 +6,14 @@ The application manages product cataloging, category organization, inventory sto
 
 ---
 
+## API Documentation
+
+Comprehensive endpoint specifications, request/response schemas, authentication requirements, and role permissions are available in the dedicated documentation file:
+
+- **[View API Documentation](API.md)**
+
+---
+
 ## Features
 
 - **Authentication**: Secure JWT-based authentication with salted PBKDF2 password hashing and automatic session restoration on reload.
