@@ -1,3 +1,8 @@
+---
+layout: default
+title: Inventory Management System Documentation
+---
+
 # Inventory Management System Documentation
 
 A full-stack Inventory Management System built with ASP.NET Core Web API, Entity Framework Core, Microsoft SQL Server, React, and TypeScript.

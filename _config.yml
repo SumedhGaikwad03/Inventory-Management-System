@@ -1,0 +1,34 @@
+title: Inventory Management System
+description: Full-stack Inventory Management System API Documentation & Architecture
+baseurl: "/Inventory-Management-System"
+url: "https://sumedhgaikwad03.github.io"
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
+exclude:
+  - bin/
+  - obj/
+  - frontend/
+  - Controllers/
+  - DTOs/
+  - Data/
+  - Exceptions/
+  - Migrations/
+  - Models/
+  - Services/
+  - Properties/
+  - "*.csproj"
+  - "*.sln"
+  - appsettings.json
+  - appsettings.Development.json

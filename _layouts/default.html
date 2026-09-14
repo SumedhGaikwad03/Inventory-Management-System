@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title | default: "Inventory Management System" }}</title>
+  <meta name="description" content="{{ site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="site-brand" href="{{ '/' | relative_url }}">Inventory Management System</a>
+      <nav class="site-nav">
+        <a href="{{ '/api' | relative_url }}">API Docs</a>
+        <a href="{{ '/docs/database-schema.svg' | relative_url }}" target="_blank" rel="noopener">ER Diagram</a>
+        <a href="https://youtu.be/yo4oo52Hr6Q" target="_blank" rel="noopener">Demo Video</a>
+        <a href="https://github.com/SumedhGaikwad03/Inventory-Management-System" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="doc-container">
+      {{ content }}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Inventory Management System &bull; Built with ASP.NET Core &amp; React</p>
+    </div>
+  </footer>
+</body>
+</html>

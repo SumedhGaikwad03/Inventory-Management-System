@@ -1,3 +1,9 @@
+---
+layout: default
+title: Inventory Management System API
+permalink: /api
+---
+
 # Inventory Management System API
 
 The Inventory Management System API is a RESTful service built with ASP.NET Core and Microsoft SQL Server. It powers the backend for user authentication, product catalog management, category organization, stock level adjustments, and inventory transaction auditing.
